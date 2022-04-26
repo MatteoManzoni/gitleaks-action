@@ -5,7 +5,7 @@ CONFIG=""
 
 # check if a custom config have been provided
 if [ -f "$GITHUB_WORKSPACE/$INPUT_CONFIG_PATH" ]; then
-  CONFIG=" --config-path=$GITHUB_WORKSPACE/$INPUT_CONFIG_PATH"
+  CONFIG=" --config=$GITHUB_WORKSPACE/$INPUT_CONFIG_PATH"
 fi
 
 echo running gitleaks "$(gitleaks version) with the following command👇"
@@ -18,9 +18,8 @@ then
   CAPTURE_OUTPUT=$(gitleaks --source=$GITHUB_WORKSPACE --verbose --redact $CONFIG)
 elif [ "$GITHUB_EVENT_NAME" = "pull_request" ]
 then 
-  git --git-dir="$GITHUB_WORKSPACE/.git" log --left-right --cherry-pick --pretty=format:"%H" remotes/origin/$GITHUB_BASE_REF... > commit_list.txt
-  echo gitleaks --source=$GITHUB_WORKSPACE --verbose --redact --commits-file=commit_list.txt $CONFIG
-  CAPTURE_OUTPUT=$(gitleaks --source=$GITHUB_WORKSPACE --verbose --redact --commits-file=commit_list.txt $CONFIG)
+  echo gitleaks detect --source=$GITHUB_WORKSPACE --log-opts "--left-right --cherry-pick --pretty=format:"%H" remotes/origin/$GITHUB_BASE_REF" --redact --verbose $CONFIG
+  CAPTURE_OUTPUT=$(gitleaks detect --source=$GITHUB_WORKSPACE --log-opts "--left-right --cherry-pick --pretty=format:"%H" remotes/origin/$GITHUB_BASE_REF" --redact --verbose $CONFIG)
 fi
 
 if [ $? -eq 1 ]
